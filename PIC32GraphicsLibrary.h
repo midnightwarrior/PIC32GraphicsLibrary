@@ -110,7 +110,7 @@ void GLCD_DrawLine(unsigned short x0, unsigned short y0, unsigned short x1, unsi
           case 1: // Dotted line - even pixels
               if(!(x0 % 2)) {
                    Draw_Point(x0,y0,1);
-                   PowerLED = 1;
+                   //PowerLED = 1;
               }
               break;
           case 2: // Dotted line - odd pixels
