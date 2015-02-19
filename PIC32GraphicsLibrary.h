@@ -474,3 +474,69 @@ char * strtok_single (char * str, char const * delims)
 
   return ret;
 }
+
+// Define array to hold "text window" contents - this is for the scrolling terminal
+// function, added 20 February 2015
+
+char textWindow[7][21];
+
+void initScrollingTerminal(void) {
+    int a,b;
+    for(a=0;a<7;a++) {
+        for(b=0;b<21;b++) {
+            textWindow[a][b] = '\0';
+        }
+    }
+}
+
+void scrollingTerminal(char *lineContents) {
+    // This function implements a text window with scrollback, for use with something
+    // like a text terminal.
+
+    int lineNumber, a, b = 0;
+    // Find out how many lines are already on the screen
+    if(textWindow[0][0] == '\0') {
+        // Copy lineContents to textWindow[0]
+        for(a=0;a<20;a++) {
+            textWindow[0][a] = lineContents[a];
+        }
+        displayScrollingTerminal();
+        return;
+    }
+    // Starting location is *not* zero - find it!
+    for(a=0;a<7;a++) {
+        if(textWindow[a][0] != '\0') {
+            // Not null character - there's data here!
+            lineNumber = a;
+            break;
+        }
+    }
+    if(a==0) {
+        // Buffer is full - starting location of zero has already been handled
+        // Push everything up one line
+        for(lineNumber=0;lineNumber<6;lineNumber++) {
+            for(b=0;b<20;b++) {
+                textWindow[lineNumber][b] = textWindow[lineNumber+1][b];
+            }
+        }
+        for(b=0;b<20;b++) {
+            textWindow[7][b] = '\0';
+        }
+        lineNumber = 6;
+    }
+    // Buffer is not full - line to use is at lineNumber
+    for(b=0;b<20;b++) {
+        textWindow[lineNumber][b] = lineContents[b];
+    }
+    displayScrollingTerminal();
+    return;
+}
+
+void displayScrollingTerminal(void) {
+    // Display updated scrolling buffer on the screen
+    int lineNumber = 0;
+    for(lineNumber=0;lineNumber<6;lineNumber++) {
+        GLCD_RenderText_writeBytes(0,lineNumber,"                      ",1);
+        GLCD_RenderText_writeBytes(0,lineNumber,textWindow[lineNumber],1);
+    }
+}
